@@ -1,21 +1,27 @@
-import { Suspense } from "react";
+import { AppThemeProvider } from "@/providers/AppThemeProvider";
+import { DrawerProvider } from "@/providers/DrawerProvider";
+import StoreProvider from "@/providers/StoreProvider";
 import { Box, Container } from "@mui/material";
-
-import StoreProvider from "@/StoreProvider";
+import { AppDrawer } from "./components/AppDrawer";
 import { AppHeader } from "./components/AppHeader";
-import { AppList } from "./components/AppList";
+import { UserList } from "./components/UserList";
 
 export default function Home() {
   return (
-    <Box className="bg-white min-h-50 mb-8 mt-0 mx-auto md:mt-8 sm:max-w-full md:max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl">
+    <AppThemeProvider>
       <StoreProvider>
-        <AppHeader />
-        <Container component="main" className="p-3">
-          <ul className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            <AppList />
-          </ul>
-        </Container>
+        <DrawerProvider>
+          <Box className="flex flex-row w-full">
+            <Box className="bg-white dark:bg-[#121212] min-h-50 mb-8 mt-0 mx-auto md:mt-8 w-full md:w-2xl lg:w-4xl xl:w-5xl 2xl:w-6xl">
+              <AppHeader />
+              <Container component="main" className="p-3">
+                <UserList />
+              </Container>
+            </Box>
+            <AppDrawer />
+          </Box>
+        </DrawerProvider>
       </StoreProvider>
-    </Box>
+    </AppThemeProvider>
   );
 }

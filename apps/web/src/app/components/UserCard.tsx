@@ -1,13 +1,5 @@
 import { GithubUser } from "@/types/user";
-import {
-  Avatar,
-  Box,
-  Card,
-  CardHeader,
-  Link,
-  Skeleton,
-  Typography,
-} from "@mui/material";
+import { Avatar, Card, CardHeader, Link, Skeleton } from "@mui/material";
 import { ReactNode } from "react";
 
 export function UserCard({ user }: { user?: GithubUser }): ReactNode {

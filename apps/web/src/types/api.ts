@@ -9,8 +9,6 @@ export interface GithubUserSearchResponse {
   rate_limit_remaining: string;
 }
 
-export interface FindApiResponse {}
-
 export interface GithubUserSearchError {
   status: number;
   message: string;

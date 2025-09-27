@@ -1,5 +1,5 @@
 import { githubUserFindApi } from "@/services/githubUserFindApi";
-import { configureStore, createSlice } from "@reduxjs/toolkit";
+import { configureStore } from "@reduxjs/toolkit";
 import { finderReducer } from "./services/finderSlice";
 
 export const makeStore = () => {

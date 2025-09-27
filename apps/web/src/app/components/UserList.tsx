@@ -1,25 +1,22 @@
 "use client";
 
+import { parseGithubUserSearchError } from "@/lib/apiUtils";
 import { useFindInfiniteQuery } from "@/services/githubUserFindApi";
 import { RootState } from "@/store";
-import {
-  Alert,
-  AlertTitle,
-  Button,
-  Chip,
-  Divider,
-  IconButton,
-} from "@mui/material";
+import ReplayIcon from "@mui/icons-material/Replay";
+import { Alert, AlertTitle, Button, Chip, Divider } from "@mui/material";
 import { ReactNode } from "react";
 import { InView } from "react-intersection-observer";
 import { useSelector } from "react-redux";
 import { UserCard } from "./UserCard";
-import ReplayIcon from "@mui/icons-material/Replay";
+import { UserListHeader } from "./UserListHeader";
 
 const IN_LOADING_USER_CARDS_NUM = 4 as const;
 
 const useDataSet = () => {
-  const { searchString } = useSelector((s: RootState) => s.finder);
+  const { searchString, filter, sort } = useSelector(
+    (s: RootState) => s.finder
+  );
   const {
     currentData,
     error,
@@ -28,11 +25,17 @@ const useDataSet = () => {
     fetchNextPage,
     hasNextPage,
     fetchPreviousPage,
-  } = useFindInfiniteQuery(searchString, { skip: !searchString });
+  } = useFindInfiniteQuery([searchString, filter, sort], {
+    skip: !searchString,
+  });
+
+  const count = currentData?.pages?.[0].total_count ?? 0;
 
   return {
     currentData,
-    error,
+    count,
+    error: parseGithubUserSearchError(error),
+    isEmpty: !currentData,
     isError,
     isFetching,
     isEOL: !hasNextPage && currentData,
@@ -42,12 +45,14 @@ const useDataSet = () => {
   };
 };
 
-export function AppList(): ReactNode {
+export function UserList(): ReactNode {
   const {
     currentData,
+    count,
     fetchNextPage,
     fetchPreviousPage,
     isError,
+    isEmpty,
     error,
     isFetching,
     isEOL,
@@ -56,25 +61,25 @@ export function AppList(): ReactNode {
 
   return (
     <>
-      {currentData?.pages.map((page) =>
-        page.items.map((user) => <UserCard user={user} key={user.id} />)
-      )}
-      {isFetching &&
-        Array.from({ length: IN_LOADING_USER_CARDS_NUM }).map((_, idx) => (
-          <UserCard key={idx} />
-        ))}
-      {isEOL && (
-        <Divider
-          className="col-span-full font-semibold text-sm"
-          variant="middle"
-        >
+      <UserListHeader isEmpty={isEmpty} isFetching={isFetching} count={count} />
+      <ul className="grid gap-4 grid-cols-1 my-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        {currentData?.pages.map((page) =>
+          page.items.map((user) => <UserCard user={user} key={user.id} />)
+        )}
+        {isFetching &&
+          Array.from({ length: IN_LOADING_USER_CARDS_NUM }).map((_, idx) => (
+            <UserCard key={idx} />
+          ))}
+      </ul>
+      {isEOL && count > 0 && (
+        <Divider className="font-semibold text-sm" variant="middle">
           END OF LIST
         </Divider>
       )}
       {isError && error && (
         <Alert
           severity="error"
-          className="col-span-full mb-4"
+          className="mb-4"
           action={
             <div className="flex flex-col gap-4 h-full justify-between p-1">
               <Button
@@ -89,7 +94,7 @@ export function AppList(): ReactNode {
               </Button>
               <div className="flex flex-col">
                 <Chip
-                  label={`RateLimit ${error.data.rate_limit_remaining}/${error.data.rate_limit}`}
+                  label={`RateLimit ${error.rate_limit_remaining}/${error.rate_limit}`}
                   size="small"
                   variant="outlined"
                   color="error"
@@ -99,7 +104,7 @@ export function AppList(): ReactNode {
           }
         >
           <AlertTitle fontWeight="bold">Error ({error.status})</AlertTitle>
-          {error.data.message}
+          {error.message}
         </Alert>
       )}
       {!isEOL && !isError && (

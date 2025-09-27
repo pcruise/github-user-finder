@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
 import "./globals.css";
+import "./tailwindMui.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const notoSans = Noto_Sans({
+  variable: "--font-noto-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const notoSansMono = Noto_Sans_Mono({
+  variable: "--font-noto-mono",
   subsets: ["latin"],
 });
 
@@ -28,7 +29,7 @@ export default function RootLayout({
         <meta name="viewport" content="initial-scale=1, width=device-width" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${notoSans.variable} ${notoSansMono.variable} antialiased`}
       >
         {children}
       </body>

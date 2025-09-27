@@ -1,21 +1,27 @@
 import { GithubUserSearchResponse } from "@/types/api";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+const baseQuery = fetchBaseQuery({
+  baseUrl: "/api",
+});
+
 export const githubUserFindApi = createApi({
   reducerPath: "githubUserFindApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "/api",
-  }),
+  baseQuery,
   endpoints: (builder) => ({
-    find: builder.infiniteQuery<GithubUserSearchResponse, string, number>({
+    find: builder.infiniteQuery<
+      GithubUserSearchResponse,
+      [string, string, string], // searchString, filter, sort
+      number
+    >({
       infiniteQueryOptions: {
         initialPageParam: 1,
         getNextPageParam: function (
           lastPage: GithubUserSearchResponse,
-          allPages: GithubUserSearchResponse[],
+          _allPages: GithubUserSearchResponse[],
           lastPageParam: number,
-          allPageParams: number[],
-          queryArg: string
+          _allPageParams: number[],
+          _queryArg: [string, string, string]
         ): number | null | undefined {
           if (lastPageParam * 100 >= lastPage.total_count) return null;
           return lastPageParam + 1;
@@ -24,7 +30,11 @@ export const githubUserFindApi = createApi({
       query: ({ queryArg, pageParam }) => {
         return {
           url: "/find",
-          params: { q: queryArg, page: pageParam, per_page: 100 },
+          params: {
+            q: `${queryArg[0]}${queryArg[1] ? ` ${queryArg[1]}` : ""}`,
+            sort: queryArg[2],
+            page: pageParam,
+          },
         };
       },
       keepUnusedDataFor: 60,
