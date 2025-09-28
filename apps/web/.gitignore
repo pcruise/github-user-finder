@@ -13,6 +13,9 @@
 # testing
 /coverage
 
+# wasm build
+/target
+
 # next.js
 /.next/
 /out/

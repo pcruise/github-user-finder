@@ -13,6 +13,12 @@ import { UserListHeader } from "./UserListHeader";
 
 const IN_LOADING_USER_CARDS_NUM = 4 as const;
 
+/**
+ * Redux 스토어의 검색어, 필터, 정렬 옵션을 사용하여
+ * Github 사용자 검색 API(`useFindInfiniteQuery`)를 호출하고,
+ * 컴포넌트에서 사용하기 쉬운 형태로 데이터를 가공하여 반환하는 커스텀 훅입니다.
+ * @returns 사용자 목록 데이터 및 API 상태
+ */
 const useDataSet = () => {
   const { searchString, filter, sort } = useSelector(
     (s: RootState) => s.finder
@@ -45,12 +51,17 @@ const useDataSet = () => {
   };
 };
 
+/**
+ * 검색된 GitHub 사용자 목록을 표시하는 컴포넌트입니다.
+ * 무한 스크롤, 로딩 스켈레톤, 에러 상태 처리를 담당합니다.
+ * @returns {ReactNode} UserList 컴포넌트
+ */
 export function UserList(): ReactNode {
   const {
     currentData,
     count,
-    fetchNextPage,
-    fetchPreviousPage,
+    fetchNextPage, // 다음 페이지 로드 함수
+    fetchPreviousPage, // 데이터 재요청 함수
     isError,
     isEmpty,
     error,

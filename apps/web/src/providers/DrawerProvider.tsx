@@ -1,7 +1,7 @@
 "use client";
 
 import { useMediaQuery } from "@mui/material";
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useContext, useMemo, useState } from "react";
 
 interface DrawerContextType {
   isDrawerOpen: boolean;
@@ -13,10 +13,14 @@ interface DrawerContextType {
 
 const DrawerContext = createContext<DrawerContextType | null>(null);
 export const DEFAULT_DRAWER_WIDTH = 384 as const; // tailwind sm size
+// ssr 렌더링 오류 픽스용
+const hasWindow = typeof window !== "undefined" ? true : false;
 
 export const DrawerProvider = ({ children }: { children: React.ReactNode }) => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const isDesktop = useMediaQuery("(min-width:64rem)"); // tailwind md size
+  const isDesktop = useMediaQuery("(min-width:64rem)", {
+    defaultMatches: hasWindow ? window.innerWidth >= 640 : true,
+  }); // tailwind md size
 
   const value = useMemo(() => {
     const drawerType = isDesktop ? "permanent" : "temporary";

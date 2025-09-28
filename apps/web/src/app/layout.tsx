@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
 import "./globals.css";
 import "./tailwindMui.css";
+import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 
 const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
@@ -24,13 +25,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
       </head>
       <body
         className={`${notoSans.variable} ${notoSansMono.variable} antialiased`}
       >
+        <InitColorSchemeScript attribute="data" />
         {children}
       </body>
     </html>

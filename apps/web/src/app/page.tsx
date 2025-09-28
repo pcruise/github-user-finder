@@ -12,7 +12,10 @@ export default function Home() {
       <StoreProvider>
         <DrawerProvider>
           <Box className="flex flex-row w-full">
-            <Box className="bg-white dark:bg-[#121212] min-h-50 mb-8 mt-0 mx-auto md:mt-8 w-full md:w-2xl lg:w-4xl xl:w-5xl 2xl:w-6xl">
+            <Box
+              bgcolor="background.paper"
+              className="min-h-50 mb-8 mt-0 mx-auto md:mt-8 w-full md:w-2xl lg:w-4xl xl:w-5xl 2xl:w-6xl"
+            >
               <AppHeader />
               <Container component="main" className="p-3">
                 <UserList />

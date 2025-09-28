@@ -3,19 +3,17 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 const finderSlice = createSlice({
   name: "finder",
   initialState: { searchString: "", sort: "default", filter: "" },
+  // immer 적용되어있는 부분
   reducers: {
-    setSearchString: (state, searchString: PayloadAction<string>) => ({
-      ...state,
-      searchString: searchString.payload ?? "",
-    }),
-    setSortOption: (state, sortOption: PayloadAction<string>) => ({
-      ...state,
-      sort: sortOption.payload ?? "default",
-    }),
-    setFilterOption: (state, filter: PayloadAction<string>) => ({
-      ...state,
-      filter: filter.payload ?? "",
-    }),
+    setSearchString: (state, action: PayloadAction<string>) => {
+      state.searchString = action.payload ?? "";
+    },
+    setSortOption: (state, action: PayloadAction<string>) => {
+      state.sort = action.payload ?? "default";
+    },
+    setFilterOption: (state, action: PayloadAction<string>) => {
+      state.filter = action.payload ?? "";
+    },
   },
 });
 

@@ -5,34 +5,24 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
-  FormLabel,
   Radio,
   RadioGroup,
   Slider,
   Switch,
   TextField,
   Typography,
-  styled,
 } from "@mui/material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { useEffect, useState } from "react";
+import { ReactElement, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useDebounce } from "use-debounce";
-
-// MUI의 styled 함수를 사용하여 테마 색상을 지원하는 제목 컴포넌트를 생성합니다.
-const SectionTitle = styled(FormLabel)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-  fontWeight: theme.typography.fontWeightBold,
-  display: "block",
-  "&.Mui-focused": {
-    color: theme.palette.text.secondary, // 포커스 시 색상 변경 방지
-  },
-}));
-
+/**
+ * 검색 필터의 상태를 정의하는 인터페이스입니다.
+ */
 interface SearchFilterState {
   accountType: string;
   searchIn: {
@@ -43,23 +33,42 @@ interface SearchFilterState {
   repoCount: number[];
   location: string;
   language: string;
-  createdDate: Date | null;
+  createdDateFrom: Date | null;
+  createdDateTo: Date | null;
   followerCount: number[];
   isSponsorable: boolean;
 }
 
-const SearchFilters = () => {
+/** 리포지토리 수 슬라이더의 기본값 [최소, 최대] */
+const REPOS_COUNT_DEFAULT = [0, 1000] as const;
+/** 팔로워 수 슬라이더의 기본값 [최소, 최대] */
+const FOLLOWER_COUNT_DEFAULT = [0, 1000] as const;
+
+/**
+ * GitHub 사용자 검색을 위한 다양한 필터 옵션을 제공하는 폼 컴포넌트입니다.
+ *
+ * 이 컴포넌트는 다음과 같은 기능을 수행합니다:
+ * - 계정 유형, 검색 범위, 위치, 언어, 가입일, 리포지토리/팔로워 수, 후원 가능 여부 등 다양한 필터 옵션을 UI로 제공합니다.
+ * - 사용자가 입력한 필터 값들을 내부 상태(`filters`)로 관리합니다.
+ * - `useDebounce` 훅을 사용하여 필터 값 변경이 멈춘 후 500ms 뒤에 API 요청을 트리거합니다.
+ * - 필터 상태를 기반으로 GitHub API 검색 쿼리 문자열을 생성합니다.
+ * - 생성된 쿼리 문자열을 Redux 스토어(`finderSlice`)에 `setFilterOption` 액션을 통해 전달합니다.
+ * @returns {React.ReactElement} SearchFilters 폼 컴포넌트
+ */
+function SearchFilters() {
   const [filters, setFilters] = useState<SearchFilterState>({
     accountType: "",
     searchIn: { name: false, login: false, email: false },
-    repoCount: [0, 1000],
     location: "",
     language: "",
-    createdDate: null,
-    followerCount: [0, 10000],
+    createdDateFrom: null,
+    createdDateTo: null,
+    repoCount: [...REPOS_COUNT_DEFAULT],
+    followerCount: [...FOLLOWER_COUNT_DEFAULT],
     isSponsorable: false,
   });
   const [debouncedFilters] = useDebounce(filters, 500);
+  const isFirst = useRef(true);
 
   const handleFilterChange = <K extends keyof SearchFilterState>(
     key: K,
@@ -68,9 +77,23 @@ const SearchFilters = () => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleSearchInChange =
+    (name: keyof SearchFilterState["searchIn"]) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      handleFilterChange("searchIn", {
+        ...filters.searchIn,
+        [name]: event.target.checked,
+      });
+    };
   const dispatch = useDispatch();
 
   useEffect(() => {
+    if (isFirst.current) {
+      // 초기 state 설정값은 호출하지 않습니다.
+      isFirst.current = false;
+      return;
+    }
+
     const optionStrings = [];
     const {
       accountType,
@@ -78,7 +101,8 @@ const SearchFilters = () => {
       repoCount,
       location,
       language,
-      createdDate,
+      createdDateFrom,
+      createdDateTo,
       followerCount,
       isSponsorable,
     } = debouncedFilters;
@@ -91,15 +115,31 @@ const SearchFilters = () => {
 
     if (location) optionStrings.push(`location:${location}`);
     if (language) optionStrings.push(`language:${language}`);
-    if (createdDate)
-      optionStrings.push(`created:>=${format(createdDate, "yyyy-MM-dd")}`);
     if (isSponsorable) optionStrings.push(`is:sponsorable`);
 
-    if (repoCount) {
-      // TODO: repocount 적용
+    if (createdDateFrom !== null && createdDateTo !== null)
+      optionStrings.push(
+        `created:${format(createdDateFrom, "yyyy-MM-dd")}..${format(createdDateTo, "yyyy-MM-dd")}`
+      );
+    else if (createdDateFrom !== null)
+      optionStrings.push(`created:>=${format(createdDateFrom, "yyyy-MM-dd")}`);
+    else if (createdDateTo !== null)
+      optionStrings.push(`created:<=${format(createdDateTo, "yyyy-MM-dd")}`);
+
+    // repoCount
+    if (
+      repoCount[0] !== REPOS_COUNT_DEFAULT[0] ||
+      repoCount[1] !== REPOS_COUNT_DEFAULT[1]
+    ) {
+      optionStrings.push(`repos:${repoCount[0]}..${repoCount[1]}`);
     }
-    if (followerCount) {
-      // TODO: foloowercount 적용
+
+    // followerCount
+    if (
+      followerCount[0] !== FOLLOWER_COUNT_DEFAULT[0] ||
+      followerCount[1] !== FOLLOWER_COUNT_DEFAULT[1]
+    ) {
+      optionStrings.push(`followers:${followerCount[0]}..${followerCount[1]}`);
     }
 
     const joinedOptionStrings = optionStrings.join(" ");
@@ -113,8 +153,7 @@ const SearchFilters = () => {
       </Typography>
 
       {/* 1. 사용자 또는 조직 */}
-      <FormControl component="fieldset" className="w-full">
-        <SectionTitle>Accounts</SectionTitle>
+      <FilterSection title="Accounts">
         <RadioGroup
           row
           aria-label="account-type"
@@ -130,37 +169,16 @@ const SearchFilters = () => {
             label="Organization"
           />
         </RadioGroup>
-      </FormControl>
+      </FilterSection>
 
       {/* 2. 검색 범위 */}
-      <FormControl component="fieldset" className="mb-6 w-full">
-        <SectionTitle>Search by</SectionTitle>
+      <FilterSection title="Search by">
         <FormGroup>
           <FormControlLabel
             control={
               <Checkbox
-                checked={filters.searchIn.login}
-                onChange={(e) =>
-                  handleFilterChange("searchIn", {
-                    ...filters.searchIn,
-                    login: e.target.checked,
-                  })
-                }
-                name="login"
-              />
-            }
-            label="Account name"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
                 checked={filters.searchIn.name}
-                onChange={(e) =>
-                  handleFilterChange("searchIn", {
-                    ...filters.searchIn,
-                    name: e.target.checked,
-                  })
-                }
+                onChange={handleSearchInChange("name")}
                 name="name"
               />
             }
@@ -169,108 +187,130 @@ const SearchFilters = () => {
           <FormControlLabel
             control={
               <Checkbox
+                checked={filters.searchIn.login}
+                onChange={handleSearchInChange("login")}
+                name="login"
+              />
+            }
+            label="Account name"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
                 checked={filters.searchIn.email}
-                onChange={(e) =>
-                  handleFilterChange("searchIn", {
-                    ...filters.searchIn,
-                    email: e.target.checked,
-                  })
-                }
+                onChange={handleSearchInChange("email")}
                 name="email"
               />
             }
             label="Email"
           />
         </FormGroup>
-      </FormControl>
+      </FilterSection>
 
       {/* 3. 위치 */}
-      <FormControl component="fieldset" className="mb-6 w-full">
-        <SectionTitle className="mb-2">Location</SectionTitle>
+      <FilterSection title="Location">
         <TextField
           variant="outlined"
           size="small"
           placeholder="ex. Seoul"
           value={filters.location}
           onChange={(e) => handleFilterChange("location", e.target.value)}
-          className="w-full"
+          className="w-full mt-2!"
         />
-      </FormControl>
+      </FilterSection>
 
       {/* 4. 사용 언어 */}
-      <FormControl component="fieldset" className="mb-6 w-full">
-        <SectionTitle className="mb-2">Language</SectionTitle>
+      <FilterSection title="Language">
         <TextField
           variant="outlined"
           size="small"
           placeholder="ex. TypeScript"
           value={filters.language}
           onChange={(e) => handleFilterChange("language", e.target.value)}
-          className="w-full"
+          className="w-full mt-2!"
         />
-      </FormControl>
+      </FilterSection>
 
       {/* 5. 계정 생성일 */}
-      <FormControl component="fieldset" className="mb-6 w-full">
-        <SectionTitle className="mb-2">Join date</SectionTitle>
+      <FilterSection title="Join date">
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ko}>
           <DatePicker
-            value={filters.createdDate}
-            onChange={(newValue) => handleFilterChange("createdDate", newValue)}
-            slotProps={{ textField: { size: "small", className: "w-full" } }}
+            className="mt-2!"
+            value={filters.createdDateFrom}
+            label="From"
+            onChange={(newValue) =>
+              handleFilterChange("createdDateFrom", newValue)
+            }
+            slotProps={{
+              textField: { size: "small", className: "w-full" },
+              field: {
+                clearable: true,
+                onClear: () => handleFilterChange("createdDateFrom", null),
+              },
+            }}
           />
-          ~
           <DatePicker
-            value={filters.createdDate}
-            onChange={(newValue) => handleFilterChange("createdDate", newValue)}
-            slotProps={{ textField: { size: "small", className: "w-full" } }}
+            className="mt-2!"
+            value={filters.createdDateTo}
+            label="To"
+            onChange={(newValue) =>
+              handleFilterChange("createdDateTo", newValue)
+            }
+            slotProps={{
+              textField: { size: "small", className: "w-full" },
+              field: {
+                clearable: true,
+                onClear: () => handleFilterChange("createdDateTo", null),
+              },
+            }}
           />
         </LocalizationProvider>
-      </FormControl>
+      </FilterSection>
 
       {/* 6. 리포지토리 수 */}
-      <FormControl component="fieldset" className="mb-6 w-full">
-        <SectionTitle className="mb-2">
-          리포지토리 수: {filters.repoCount[0]} -{" "}
-          {filters.repoCount[1] === 1000 ? "1000+" : filters.repoCount[1]}
-        </SectionTitle>
+      <FilterSection
+        title={`Repositories: ${filters.repoCount[0].toLocaleString()} - ${
+          filters.repoCount[1] === 1000
+            ? "1k+"
+            : filters.repoCount[1].toLocaleString()
+        }`}
+      >
         <Slider
           value={filters.repoCount}
           onChange={(_, newValue) =>
             handleFilterChange("repoCount", newValue as number[])
           }
           valueLabelDisplay="auto"
-          min={0}
-          max={1000}
+          min={REPOS_COUNT_DEFAULT[0]}
+          max={REPOS_COUNT_DEFAULT[1]}
           step={10}
           aria-labelledby="repository-count-slider"
         />
-      </FormControl>
+      </FilterSection>
 
       {/* 7. 팔로워 수 */}
-      <FormControl component="fieldset" className="mb-6 w-full">
-        <SectionTitle className="mb-2">
-          팔로워 수: {filters.followerCount[0]} -{" "}
-          {filters.followerCount[1] === 10000
-            ? "10k+"
-            : filters.followerCount[1]}
-        </SectionTitle>
+      <FilterSection
+        title={`Followers: ${filters.followerCount[0].toLocaleString()} - ${
+          filters.followerCount[1] === FOLLOWER_COUNT_DEFAULT[1]
+            ? "1k+"
+            : filters.followerCount[1].toLocaleString()
+        }`}
+      >
         <Slider
           value={filters.followerCount}
           onChange={(_, newValue) =>
             handleFilterChange("followerCount", newValue as number[])
           }
           valueLabelDisplay="auto"
-          min={0}
-          max={10000}
-          step={100}
+          min={FOLLOWER_COUNT_DEFAULT[0]}
+          max={FOLLOWER_COUNT_DEFAULT[1]}
+          step={50}
           aria-labelledby="follower-count-slider"
         />
-      </FormControl>
+      </FilterSection>
 
       {/* 8. 후원 가능 여부 */}
-      <FormControl component="fieldset" className="w-full">
-        <SectionTitle>Sponsorable</SectionTitle>
+      <FilterSection title="Sponsorable">
         <FormControlLabel
           control={
             <Switch
@@ -280,11 +320,34 @@ const SearchFilters = () => {
               }
             />
           }
-          label="Is Sponsorable"
+          label={"Is Sponsorable"}
         />
-      </FormControl>
+      </FilterSection>
     </Box>
   );
-};
+}
+
+/**
+ * 각 필터 섹션의 UI를 일관되게 감싸는 래퍼 컴포넌트입니다.
+ * @param {object} props - 컴포넌트 props
+ * @param {React.ReactElement} props.children - 필터링 UI 컴포넌트들
+ * @param {string} props.title - 섹션의 제목
+ */
+function FilterSection({
+  children,
+  title,
+}: {
+  children: ReactElement;
+  title: string;
+}) {
+  return (
+    <FormControl component="fieldset" className="w-full">
+      <Typography component="legend" color="textDisabled">
+        {title}
+      </Typography>
+      {children}
+    </FormControl>
+  );
+}
 
 export default SearchFilters;

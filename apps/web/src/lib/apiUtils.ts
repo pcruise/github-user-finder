@@ -18,11 +18,10 @@ export const createGithubApiResponse = async (response: Response) => {
   const res = await response.json();
 
   // Github 오류 발생 시
-  if (!res?.items && res.status !== "200" && res.message) {
-    const { message, status } = res;
+  if (!response.ok && res.message) {
     const responseJson: GithubUserSearchError = {
-      status,
-      message,
+      status: response.status,
+      message: res.message,
       ...rateLimit,
     };
     return responseJson;
@@ -48,6 +47,10 @@ export const createGithubApiResponse = async (response: Response) => {
   return responseJson;
 };
 
+/**
+ * 기본 `GithubUserSearchError` 객체입니다.
+ * @constant
+ */
 const DEFAULT_GITHUB_API_ERROR: GithubUserSearchError = {
   status: 500,
   message: "Unknown Error",

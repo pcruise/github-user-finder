@@ -1,0 +1,18 @@
+[package]
+name = "thumbwasm"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+path = "src/lib/lib.rs" 
+
+[dependencies]
+wasm-bindgen = "0.2"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "bmp"] }
+
+# 선택(개발 편의): 패닉 시 에러를 콘솔에 이쁘게 표시
+console_error_panic_hook = { version = "0.1", optional = true }
+
+[features]
+default = ["console_error_panic_hook"]

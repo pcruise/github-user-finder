@@ -10,7 +10,6 @@ export const makeStore = () => {
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(githubUserFindApi.middleware),
-    // preloadedState: {}
   });
 };
 
