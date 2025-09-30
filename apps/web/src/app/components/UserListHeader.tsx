@@ -68,7 +68,7 @@ export function UserListHeader({
 
         {!isEmpty && (
           <Typography fontWeight={"semibold"} className="flex items-end">
-            Found {count.toLocaleString()} user{count > 1 ? "s" : ""}
+            Found {count.toLocaleString()} user{count !== 1 ? "s" : ""}
           </Typography>
         )}
         {isFetching && !count && (

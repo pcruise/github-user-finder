@@ -3,8 +3,17 @@
 import { parseGithubUserSearchError } from "@/lib/apiUtils";
 import { useFindInfiniteQuery } from "@/services/githubUserFindApi";
 import { RootState } from "@/store";
+import MenuIcon from "@mui/icons-material/Menu";
 import ReplayIcon from "@mui/icons-material/Replay";
-import { Alert, AlertTitle, Button, Chip, Divider } from "@mui/material";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import {
+  Alert,
+  AlertTitle,
+  Button,
+  Chip,
+  Divider,
+  Typography,
+} from "@mui/material";
 import { ReactNode } from "react";
 import { InView } from "react-intersection-observer";
 import { useSelector } from "react-redux";
@@ -52,6 +61,33 @@ const useDataSet = () => {
 };
 
 /**
+ * 검색어가 입력되지 않았을 때 사용자에게 앱 사용법을 안내하는 초기 화면 컴포넌트입니다.
+ */
+const InitialGuide = () => (
+  <div className="p-6 pb-12 mt-4">
+    <Typography
+      className="text-center"
+      variant="h5"
+      component="h2"
+      gutterBottom
+    >
+      Github User Finder
+    </Typography>
+    <div className="mt-6">
+      <Typography color="text.secondary">
+        1. Start searching by entering a keyword in the{" "}
+        <SearchOutlinedIcon color="action" /> search bar at the top.
+      </Typography>
+      <Typography color="text.secondary">
+        2. You can use advanced search options in the filter menu on the right.
+        On smaller screens, you can open the filter menu by pressing the{" "}
+        <MenuIcon /> menu button at the top right of the app.
+      </Typography>
+    </div>
+  </div>
+);
+
+/**
  * 검색된 GitHub 사용자 목록을 표시하는 컴포넌트입니다.
  * 무한 스크롤, 로딩 스켈레톤, 에러 상태 처리를 담당합니다.
  * @returns {ReactNode} UserList 컴포넌트
@@ -72,62 +108,76 @@ export function UserList(): ReactNode {
 
   return (
     <>
-      <UserListHeader isEmpty={isEmpty} isFetching={isFetching} count={count} />
-      <ul className="grid gap-4 grid-cols-1 my-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-        {currentData?.pages.map((page) =>
-          page.items.map((user) => <UserCard user={user} key={user.id} />)
-        )}
-        {isFetching &&
-          Array.from({ length: IN_LOADING_USER_CARDS_NUM }).map((_, idx) => (
-            <UserCard key={idx} />
-          ))}
-      </ul>
-      {isEOL && count > 0 && (
-        <Divider className="font-semibold text-sm" variant="middle">
-          END OF LIST
-        </Divider>
-      )}
-      {isError && error && (
-        <Alert
-          severity="error"
-          className="mb-4"
-          action={
-            <div className="flex flex-col gap-4 h-full justify-between p-1">
-              <Button
-                variant="outlined"
-                endIcon={<ReplayIcon />}
-                color="error"
-                onClick={() => {
-                  fetchPreviousPage();
-                }}
-              >
-                Retry
-              </Button>
-              <div className="flex flex-col">
-                <Chip
-                  label={`RateLimit ${error.rate_limit_remaining}/${error.rate_limit}`}
-                  size="small"
-                  variant="outlined"
-                  color="error"
-                />
-              </div>
-            </div>
-          }
-        >
-          <AlertTitle fontWeight="bold">Error ({error.status})</AlertTitle>
-          {error.message}
-        </Alert>
-      )}
-      {!isEOL && !isError && (
-        <InView
-          className="h-10"
-          onChange={(inView) => {
-            if (hasSearchString && inView) {
-              fetchNextPage();
-            }
-          }}
-        ></InView>
-      )}
+      {
+        <>
+          <UserListHeader
+            isEmpty={isEmpty}
+            isFetching={isFetching}
+            count={count}
+          />
+          {/* 초기 화면 컴포넌트입니다 */}
+          {!hasSearchString && <InitialGuide />}
+          {/* 유저 목록 컴포넌트입니다. 로드 시에는 IN_LOADING_USER_CARDS_NUM 만큼의 스켈레톤 카드를 추가합니다 */}
+          <ul className="grid gap-4 grid-cols-1 my-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            {currentData?.pages.map((page) =>
+              page.items.map((user) => <UserCard user={user} key={user.id} />)
+            )}
+            {isFetching &&
+              Array.from({ length: IN_LOADING_USER_CARDS_NUM }).map(
+                (_, idx) => <UserCard key={idx} />
+              )}
+          </ul>
+          {/* 목록 마지막 표시 컴포넌트입니다 */}
+          {isEOL && count > 0 && (
+            <Divider className="font-semibold text-sm" variant="middle">
+              END OF LIST
+            </Divider>
+          )}
+          {/* 에러 alert 컴포넌트입니다 */}
+          {isError && error && (
+            <Alert
+              severity="error"
+              className="mb-4"
+              action={
+                <div className="flex flex-col gap-4 h-full justify-between p-1">
+                  <Button
+                    variant="outlined"
+                    endIcon={<ReplayIcon />}
+                    color="error"
+                    onClick={() => {
+                      fetchPreviousPage();
+                    }}
+                  >
+                    Retry
+                  </Button>
+                  <div className="flex flex-col">
+                    <Chip
+                      label={`RateLimit ${error.rate_limit_remaining}/${error.rate_limit}`}
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                    />
+                  </div>
+                </div>
+              }
+            >
+              <AlertTitle fontWeight="bold">Error ({error.status})</AlertTitle>
+              {error.message}
+            </Alert>
+          )}
+          {/* 무한 스크롤을 위한 inview 컴포넌트입니다 */}
+          {!isEOL && !isError && (
+            <InView
+              className="h-10"
+              onChange={(inView) => {
+                if (hasSearchString && inView) {
+                  fetchNextPage();
+                }
+              }}
+            ></InView>
+          )}
+        </>
+      }
     </>
   );
 }

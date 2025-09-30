@@ -212,6 +212,7 @@ function SearchFilters() {
         <TextField
           variant="outlined"
           size="small"
+          name="location"
           placeholder="ex. Seoul"
           value={filters.location}
           onChange={(e) => handleFilterChange("location", e.target.value)}
@@ -224,6 +225,7 @@ function SearchFilters() {
         <TextField
           variant="outlined"
           size="small"
+          name="language"
           placeholder="ex. TypeScript"
           value={filters.language}
           onChange={(e) => handleFilterChange("language", e.target.value)}

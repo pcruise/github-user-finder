@@ -1,135 +1,110 @@
-# Turborepo starter
+# GitHub User Finder
 
-This Turborepo starter is maintained by the Turborepo core team.
+GitHub 사용자를 검색하고 탐색할 수 있는 웹 애플리케이션입니다. Next.js, TypeScript, Turborepo를 기반으로 구축되었으며, GitHub API를 활용하여 사용자 검색, 필터링, 정렬 등 다양한 기능을 제공합니다.
 
-## Using this example
+## 주요 기능
 
-Run the following command:
+- **사용자 검색**: 키워드를 통해 GitHub 사용자를 검색합니다.
+- **상세 필터링**: 사용자 유형(User/Organization), 위치, 사용 언어 등 다양한 조건으로 검색 결과를 필터링할 수 있습니다.
+- **결과 정렬**: 팔로워 수, 레포지토리 수, 가입 날짜를 기준으로 검색 결과를 정렬합니다.
+- **무한 스크롤**: 스크롤을 내리면 다음 페이지의 검색 결과를 동적으로 로드하여 보여줍니다.
+- **최적화된 이미지 처리**: Rust와 WebAssembly를 사용하여 사용자 아바타 이미지를 클라이언트 측에서 리사이징하고 원형으로 마스킹하여 렌더링 성능을 최적화했습니다.
+- **BFF (Backend For Frontend)**: Next.js API Route를 BFF 패턴으로 활용하여 GitHub API와의 통신을 중계하고, API 토큰을 안전하게 관리합니다.
+- **에러 핸들링**: GitHub API의 Rate Limit과 같은 예외 상황 발생 시 사용자에게 명확한 에러 메시지와 재시도 옵션을 제공합니다.
+- **반응형 UI**: Material-UI(MUI)와 Tailwind CSS를 사용하여 다양한 화면 크기에 대응하는 반응형 인터페이스를 제공합니다.
 
-```sh
-npx create-turbo@latest
+## 기술 스택
+
+- **프레임워크**: Next.js, React
+- **언어**: TypeScript
+- **상태 관리**: Redux Toolkit
+- **UI**: Material-UI (MUI), Tailwind CSS
+- **WebAssembly**: Rust, wasm-pack
+- **테스팅**: Jest, React Testing Library, Cypress
+- **모노레포**: Turborepo
+- **패키지 매니저**: pnpm
+
+## 주의점
+
+- MUI와 Tailwind CSS를 혼용하고 있으므로, 각 라이브러리가다.- MUI와 Tailwind CSS를 함께 사용하므로, 각 라이브러리의 스타일링 역할을 구분하여 사용하는 것이 좋습니다.
+  이 애플리케이션에서는 MUI가 주로 색상과 테마를, Tailwind CSS는 레이아웃, 크기, 여백 등을 담당합니다.
+
+## 실행 및 테스트 방법
+
+### 1. 사전 준비
+
+- [Node.js](https://nodejs.org/en/) (v18.18.0 이상)
+- [pnpm](https://pnpm.io/installation)
+- [Rust 및 wasm-pack](https://rustwasm.github.io/wasm-pack/installer/) (optional)
+
+### 2. 프로젝트 클론 및 의존성 설치
+
+```bash
+# 프로젝트 클론
+git clone https://github.com/pcruise/github-user-finder.git
+cd github-user-finder
+
+# pnpm을 사용하여 의존성 설치
+pnpm install
 ```
 
-## What's inside?
+### 3. 환경 변수 설정
 
-This Turborepo includes the following packages/apps:
+apps/web/ 디렉토리에 `.env` 파일을 생성하고 GitHub API 사용을 위한 Personal Access Token을 추가합니다. 이 토큰은 BFF에서 GitHub API 요청 시 인증에 사용됩니다.
+토큰이 제공되지 않으면 적은 Rate-Limit이 적용됩니다.
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```.env
+GITHUB_TOKEN=your_github_personal_access_token
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### 4. WebAssembly 모듈 빌드 (optional)
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+Rust로 작성된 이미지 처리 모듈을 WebAssembly로 빌드합니다.
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+```bash
+# apps/web/wasm 디렉토리로 이동
+cd apps/web/wasm
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+# wasm-pack을 사용하여 빌드
+wasm-pack build --target web
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### 5. 개발 서버 실행
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+프로젝트 루트 디렉토리에서 다음 명령어를 실행하여 개발 서버를 시작합니다.
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```bash
+pnpm dev
 ```
 
-### Remote Caching
+이제 브라우저에서 `http://localhost:3000`으로 접속하여 애플리케이션을 확인할 수 있습니다.
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+### 6. 운영 서버 실행
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+프로젝트 루트 디렉토리에서 다음 명령어를 실행하여 어플리케이션을 빌드합니다
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+```bash
+pnpm build
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+이후, 프로젝트 루트 디렉토리에서 다음 명령어를 실행하여 어플리케이션을 실행합니다
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+```bash
+pnpm start
 ```
 
-## Useful Links
+이제 브라우저에서 `http://localhost:3000`으로 접속하여 애플리케이션을 확인할 수 있습니다.
 
-Learn more about the power of Turborepo:
+## 테스트
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+### 유닛/통합 테스트 (Jest)
+
+```bash
+pnpm test
+```
+
+### E2E 테스트 (Cypress)
+
+```bash
+pnpm test:e2e
+```

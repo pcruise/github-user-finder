@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // "cypress" 타입을 여기에 명시하여 Jest 타입과 충돌 방지
+    "types": ["cypress", "node"]
+  },
+  "include": ["**/*.ts", "**/*.tsx", "../src/**/*.d.ts"]
+}

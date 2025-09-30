@@ -15,7 +15,7 @@ import { Provider } from "react-redux";
 import { githubUserFindApi, useFindInfiniteQuery } from "./githubUserFindApi";
 import "whatwg-fetch";
 import { APP_API_BASE_URL, APP_API_FIND_PATH } from "@/lib/constants";
-import { GithubUserSearchResponse } from "@/types/api";
+import { GithubUserSearchError, GithubUserSearchResponse } from "@/types/api";
 
 /**
  * `fetch` 함수를 모킹하여 실제 네트워크 요청이 발생하지 않도록 합니다.
@@ -253,7 +253,13 @@ describe("githubUserFindApi", () => {
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
     // RTK Query는 에러 응답을 파싱하여 data 프로퍼티에 넣습니다.
-    expect((result.current.error as any).data).toEqual(errorResponse);
-    expect((result.current.error as any).status).toBe(403);
+    expect(
+      (result.current.error as { data: GithubUserSearchError; status: number })
+        .data
+    ).toEqual(errorResponse);
+    expect(
+      (result.current.error as { data: GithubUserSearchError; status: number })
+        .status
+    ).toBe(403);
   });
 });

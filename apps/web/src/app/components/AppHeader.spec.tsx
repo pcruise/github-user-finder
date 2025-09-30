@@ -101,7 +101,7 @@ describe("AppHeader", () => {
     it("should be visible when drawerType is 'temporary'", () => {
       // beforeEach에서 이미 'temporary'로 설정됨
       render(<AppHeader />);
-      expect(screen.getByLabelText("menu")).toBeInTheDocument();
+      expect(screen.getByLabelText("open filter drawer")).toBeInTheDocument();
     });
 
     it("should not be visible when drawerType is 'permanent'", () => {
@@ -110,7 +110,9 @@ describe("AppHeader", () => {
         drawerType: "permanent",
       });
       render(<AppHeader />);
-      expect(screen.queryByLabelText("menu")).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText("open filter drawer")
+      ).not.toBeInTheDocument();
     });
 
     it("should call setDrawerOpen when clicked", () => {
@@ -120,7 +122,7 @@ describe("AppHeader", () => {
         setDrawerOpen: mockSetDrawerOpen,
       });
       render(<AppHeader />);
-      const menuButton = screen.getByLabelText("menu");
+      const menuButton = screen.getByLabelText("open filter drawer");
       fireEvent.click(menuButton);
 
       // isDrawerOpen이 false였으므로, !false = true가 전달되어야 합니다.

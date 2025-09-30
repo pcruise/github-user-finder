@@ -94,7 +94,7 @@ export function AppHeader(): ReactNode {
           <IconButton
             edge="end"
             color="inherit"
-            aria-label="menu"
+            aria-label="open filter drawer"
             className="ml-2!"
             onClick={() => setDrawerOpen(!isDrawerOpen)}
           >

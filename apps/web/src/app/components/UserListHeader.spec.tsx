@@ -103,4 +103,28 @@ describe("UserListHeader", () => {
     expect(mockDispatch).toHaveBeenCalledWith(setSortOption("followers"));
     expect(mockDispatch).toHaveBeenCalledTimes(1);
   });
+
+  it("should only dispatch the last sort option when changed multiple times within debounce time", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    render(<UserListHeader isEmpty={false} isFetching={false} count={10} />);
+
+    // 드롭다운을 열고 짧은 시간 안에 여러 옵션을 선택합니다.
+    const selectTrigger = screen.getByRole("combobox", { name: "Sort by" });
+    await user.click(selectTrigger);
+    await user.click(screen.getByRole("option", { name: "Followers" }));
+    await user.click(selectTrigger); // 다시 열기
+    await user.click(screen.getByRole("option", { name: "Repositories" }));
+
+    // 디바운스 시간(150ms)이 지나기 전에는 dispatch가 호출되지 않음
+    expect(mockDispatch).not.toHaveBeenCalled();
+
+    // 타이머를 150ms 진행
+    act(() => {
+      jest.advanceTimersByTime(150);
+    });
+
+    // 마지막으로 선택된 'Repositories'에 대해서만 dispatch가 한 번 호출되었는지 확인
+    expect(mockDispatch).toHaveBeenCalledWith(setSortOption("repositories"));
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
+  });
 });
