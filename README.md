@@ -61,8 +61,8 @@ GITHUB_TOKEN=your_github_personal_access_token
 Rust로 작성된 이미지 처리 모듈을 WebAssembly로 빌드합니다.
 
 ```bash
-# apps/web/wasm 디렉토리로 이동
-cd apps/web/wasm
+# apps/web/ 디렉토리로 이동
+cd apps/web/
 
 # wasm-pack을 사용하여 빌드
 wasm-pack build --target web --release -d ./src/pkg/
