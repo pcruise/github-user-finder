@@ -1,8 +1,9 @@
+import { APP_API_BASE_URL, APP_API_FIND_PATH } from "@/lib/constants";
 import { GithubUserSearchResponse } from "@/types/api";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "/api",
+  baseUrl: APP_API_BASE_URL,
 });
 
 export const githubUserFindApi = createApi({
@@ -29,7 +30,7 @@ export const githubUserFindApi = createApi({
       },
       query: ({ queryArg, pageParam }) => {
         return {
-          url: "/find",
+          url: APP_API_FIND_PATH,
           params: {
             q: `${queryArg[0]}${queryArg[1] ? ` ${queryArg[1]}` : ""}`,
             sort: queryArg[2],

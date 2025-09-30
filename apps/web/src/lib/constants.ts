@@ -14,3 +14,12 @@ export const GITHUB_REQUEST_HEADER = {
  */
 export const GITHUB_API_URL_BASE =
   "https://api.github.com/search/users" as const;
+
+/**
+ * Next.js 앱에서 사용하는 API 베이스 URL입니다.
+ */
+export const APP_API_BASE_URL = "/api" as const;
+/**
+ * 앱에서 사용하는 검색 API Path입니다.
+ */
+export const APP_API_FIND_PATH = "/find" as const;
