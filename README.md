@@ -65,7 +65,7 @@ Rust로 작성된 이미지 처리 모듈을 WebAssembly로 빌드합니다.
 cd apps/web/wasm
 
 # wasm-pack을 사용하여 빌드
-wasm-pack build --target web
+wasm-pack build --target web --release -d ./src/pkg/
 ```
 
 ### 5. 개발 서버 실행

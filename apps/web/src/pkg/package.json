@@ -1,0 +1,17 @@
+{
+  "name": "thumbwasm",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "thumbwasm_bg.wasm",
+    "thumbwasm.js",
+    "thumbwasm_bg.js",
+    "thumbwasm.d.ts"
+  ],
+  "main": "thumbwasm.js",
+  "types": "thumbwasm.d.ts",
+  "sideEffects": [
+    "./thumbwasm.js",
+    "./snippets/*"
+  ]
+}
