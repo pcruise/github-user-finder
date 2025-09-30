@@ -34,7 +34,7 @@ GitHub 사용자를 검색하고 탐색할 수 있는 웹 애플리케이션입�
 
 - [Node.js](https://nodejs.org/en/) (v18.18.0 이상)
 - [pnpm](https://pnpm.io/installation)
-- [Rust 및 wasm-pack](https://rustwasm.github.io/wasm-pack/installer/) (optional)
+- Rust 및 wasm-pack (optional)
 
 ### 2. 프로젝트 클론 및 의존성 설치
 
